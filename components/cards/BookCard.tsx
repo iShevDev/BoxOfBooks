@@ -6,7 +6,14 @@ import {
   Image,
   StyleSheet,
   ImageSourcePropType,
+  Pressable,
+  Animated,
 } from "react-native";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
+
+type RootStackParamList = {
+  book: { name: string };
+};
 
 interface BookCardProps {
   name: string;
@@ -14,25 +21,53 @@ interface BookCardProps {
   subtitle?: string;
 }
 
-const BookCard: React.FC<BookCardProps> = ({
-  name = "",
-  subtitle = "",
-  imagePath,
-}) => {
+const BookCard: React.FC<BookCardProps> = ({ name, subtitle, imagePath }) => {
   const [fontsLoaded] = useFonts({
-    PlaytimeWithHotToddies: require("../../assets/fonts/playtime.ttf"),
+    PlaytimeWithHotToddies: require("@/assets/fonts/playtime.ttf"),
   });
 
-  const titleStyles = subtitle
-    ? [styles.bookTitle, { paddingBottom: 0 }]
-    : styles.bookTitle;
+  const scaleValue = React.useRef(new Animated.Value(1)).current;
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  const onPressIn = () => {
+    Animated.spring(scaleValue, {
+      toValue: 0.95,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const onPressOut = () => {
+    Animated.spring(scaleValue, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePress = () => {
+    navigation.navigate("book", { name });
+  };
+
+  if (!fontsLoaded) {
+    return <Text>Loading...</Text>;
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={titleStyles}>{name}</Text>
-      {subtitle && <Text style={styles.bookSubTitle}>{subtitle}</Text>}
-      <View style={styles.card}>
-        <Image source={imagePath} style={styles.bookImage} />
-      </View>
+      <Pressable
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        onPress={handlePress}
+      >
+        <Animated.View
+          style={[styles.card, { transform: [{ scale: scaleValue }] }]}
+        >
+          <Text style={styles.bookTitle}>{name}</Text>
+          {subtitle && <Text style={styles.bookSubTitle}>{subtitle}</Text>}
+          <View style={styles.image}>
+            <Image source={imagePath} style={styles.bookImage} />
+          </View>
+        </Animated.View>
+      </Pressable>
     </View>
   );
 };
@@ -45,8 +80,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   card: {
+    alignItems: "center",
+  },
+  image: {
     backgroundColor: "rgba(235, 235, 235, 0.6)",
-    borderRadius: 10,
+    borderRadius: 40,
     padding: 20,
     alignItems: "center",
     shadowColor: "#000",
@@ -71,11 +109,6 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     margin: 20,
-  },
-  ageText: {
-    fontSize: 18,
-    fontFamily: "SpaceMono",
-    color: "#000",
   },
 });
 

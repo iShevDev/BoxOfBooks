@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,11 +7,11 @@ import {
   ImageBackground,
   FlatList,
 } from "react-native";
-import ParallaxScrollView from "../components/ParallaxScrollView";
+import * as SplashScreen from "expo-splash-screen";
 import BookCard from "../components/cards/BookCard";
 
-const image = require("../assets/images/background.jpg");
-const bookImage = require("../assets/images/carpenter-book.jpg");
+const image = require("@/assets/images/background.jpg");
+const bookImage = require("@/assets/images/carpenter-book.jpg");
 
 const bookList = [
   {
@@ -48,19 +49,32 @@ const bookList = [
   },
 ];
 
-// export default function Home() {
-//   return (
-//     <View style={styles.container}>
-//       <ParallaxScrollView
-//         backgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-//         image={<Image source={require("@/assets/images/background.jpg")} />}
-//       >
-//         <BookCard />
-//       </ParallaxScrollView>
-//     </View>
-//   );
-// }
+SplashScreen.preventAutoHideAsync();
+
 export default function Home() {
+  const [appIsReady, setAppIsReady] = useState(false);
+
+  useEffect(() => {
+    async function prepare() {
+      try {
+        // Artificially delay for demonstration purposes
+        // Remove this if you are fetching data or doing something async in reality
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        setAppIsReady(true);
+        await SplashScreen.hideAsync();
+      }
+    }
+
+    prepare();
+  }, []);
+
+  if (!appIsReady) {
+    return null;
+  }
+
   return (
     <ImageBackground
       style={styles.backgroundImg}
